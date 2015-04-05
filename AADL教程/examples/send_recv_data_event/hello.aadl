@@ -1,0 +1,96 @@
+package hello
+public
+
+	with Data_Model;
+	with Deployment;
+
+	data myint
+		properties
+			Data_Model::Data_Representation => Integer;
+	end myint;
+	
+	
+	subprogram sub_send
+	features
+  		out_data : out parameter myint;
+	properties
+		source_language => (C);
+	    source_name     => "send";
+	    source_text     => ("hello.c");
+	end sub_send;
+	
+	subprogram sub_recv
+	features
+  		in_data : in parameter myint;
+	properties
+		source_language => (C);
+	    source_name     => "recv";
+	  	source_text     => ("hello.c");
+	end sub_recv;
+	
+	thread th_send
+	features
+		out_data: out event data port myint;
+	end th_send;
+	
+	thread implementation th_send.impl
+	calls 
+	Mycalls: {
+	  	p_send : subprogram sub_send;
+	};
+	connections
+		p1:parameter p_send.out_data->out_data;
+	properties
+	   	Dispatch_Protocol                  => periodic;
+	   	Period                             => 1000ms;
+	end th_send.impl;
+	
+	thread th_recv
+	features
+		in_data: in event data port myint;
+	end th_recv;
+	
+	thread implementation th_recv.impl
+	calls 
+	Mycalls: {
+	 	p_recv : subprogram sub_recv;
+	};
+	connections
+		p1:parameter in_data->p_recv.in_data;
+	properties
+	   	Dispatch_Protocol                  => sporadic;
+	   	Period                             => 3000ms;
+	end th_recv.impl;
+	
+	process proc
+	end proc;
+
+	process implementation proc.impl
+		subcomponents
+			send: thread th_send.impl;
+			recv: thread th_recv.impl;
+		connections
+			c: port send.out_data-> recv.in_data;
+	end proc.impl;
+
+	processor cpu
+	end cpu;
+
+	processor implementation cpu.impl
+		properties
+			Deployment::Execution_Platform => native;
+	end cpu.impl;
+
+	system sys
+	end sys;
+
+	system implementation sys.impl
+		subcomponents
+			proc: process proc.impl;
+			cpu: processor cpu.impl;
+		properties
+			Actual_Processor_Binding => (reference (cpu)) applies to proc;
+	end sys.impl;
+
+end hello;
+
