@@ -1,0 +1,48 @@
+package hello
+public
+
+	with Deployment;
+
+
+	thread th
+	end th;
+
+	thread implementation th.impl
+		properties
+			Dispatch_Protocol => Periodic;
+			Period => 1000 ms;
+			source_language => (C);
+			source_text => ("hello.c");
+			Initialize_Entrypoint_Source_Text => "init";
+			Compute_Entrypoint_Source_Text => "run";
+	end th.impl;
+
+
+	process proc
+	end proc;
+
+	process implementation proc.impl
+		subcomponents
+			th: thread th.impl;
+	end proc.impl;
+
+	processor cpu
+	end cpu;
+
+	processor implementation cpu.impl
+		properties
+			Deployment::Execution_Platform => NATIVE;
+	end cpu.impl;
+
+	system sys
+	end sys;
+
+	system implementation sys.impl
+		subcomponents
+			proc: process proc.impl;
+			cpu: processor cpu.impl;
+		properties
+			Actual_Processor_Binding => (reference (cpu)) applies to proc;
+	end sys.impl;
+
+end hello;

@@ -1,0 +1,79 @@
+package hello
+public
+
+	with Deployment;
+
+	subprogram sub1
+	end sub1;
+
+	subprogram implementation sub1.impl
+		properties
+			source_language => (C);
+			source_text => ("hello.c");
+			source_name => "run1";
+	end sub1.impl;
+
+	subprogram sub2
+	end sub2;
+
+	subprogram implementation sub2.impl
+		properties
+			source_language => (C);
+			source_text => ("hello.c");
+			source_name => "run2";
+	end sub2.impl;
+
+	subprogram wrapper
+	end wrapper;
+
+	subprogram implementation wrapper.impl
+		calls
+			Mycall: {
+					sub1: subprogram sub1.impl;
+					sub2: subprogram sub2.impl;
+				};
+	end wrapper.impl;
+
+	thread th
+	end th;
+
+	thread implementation th.impl
+		calls
+			Mycall: {
+					wrapper: subprogram wrapper.impl;
+				};
+		properties
+			Dispatch_Protocol => Periodic;
+			Period => 1000 ms;
+			Initialize_Entrypoint_Source_Text => "init";
+	end th.impl;
+
+
+	process proc
+	end proc;
+
+	process implementation proc.impl
+		subcomponents
+			th: thread th.impl;
+	end proc.impl;
+
+	processor cpu
+	end cpu;
+
+	processor implementation cpu.impl
+		properties
+			Deployment::Execution_Platform => NATIVE;
+	end cpu.impl;
+
+	system sys
+	end sys;
+
+	system implementation sys.impl
+		subcomponents
+			proc: process proc.impl;
+			cpu: processor cpu.impl;
+		properties
+			Actual_Processor_Binding => (reference (cpu)) applies to proc;
+	end sys.impl;
+
+end hello;
