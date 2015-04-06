@@ -7,20 +7,20 @@ subcomponents
   sensor: device sensor;
   controller: process constrollerprocess.i;
   proc: process proc;
-  can_bus: bus can;
+  MIL_STD_1553B_bus: bus MIL_STD_1553B;
 connections
   -- bind port conncetions with bus
   data port sensor.temprature -> controller.sensor_temprature
-  { Actual_Connection.Binding => reference can_bus;
+  { Actual_Connection.Binding => reference MIL_STD_1553B_bus;
   SEI::BandWidthBudget => 50.0kbps;
   }
   data port controller.actuator.engaged => actuator.engaged
-  { Actual_Connection_Binding => reference can_bus;
+  { Actual_Connection_Binding => reference MIL_STD_1553B_bus;
   }
-  bus access can_bus -> sensor.io;
-  bus access can_bus -> actuator.io;
-  bus access can_bus -> mem.io;
-  bus access can_bus -> proc.io;
+  bus access MIL_STD_1553B_bus -> sensor.io;
+  bus access MIL_STD_1553B_bus -> actuator.io;
+  bus access MIL_STD_1553B_bus -> mem.io;
+  bus access MIL_STD_1553B_bus -> proc.io;
 properties
   Actual_Processor_Binding => reference proc applies to controller;
   Actual_Memory_Binding => reference mem applies to controller;
